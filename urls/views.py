@@ -6,27 +6,13 @@ from .models import URL
 from .serializers import URLSerializer
 
 
-class ForwardUrlApiView(APIView):
-    def get_object(self, key):
-        try:
-            return URL.objects.get(key=key, is_active=True)
-        except URL.DoesNotExist:
-            return None
+class RootUrlApiView(APIView):
+    def get(self, request, *args, **kwargs):
+        return Response(
+            f"Welcome to ShortURL app!",
+            status=status.HTTP_200_OK
+        )
 
-    def get(self, request, key, *args, **kwargs):
-        url = self.get_object(key)
-        if not url:
-            return Response(
-                {"res": "Short URL does not exists"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        url.clicks += 1
-        url.save()
-        return redirect(url.target_url)
-
-
-class CreateUrlApiView(APIView):
     def post(self, request, *args, **kwargs):
         data = {
             'target_url': request.data.get('target_url'),
@@ -38,6 +24,26 @@ class CreateUrlApiView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ForwardUrlApiView(APIView):
+    def get_object(self, key):
+        try:
+            return URL.objects.get(key=key, is_active=True)
+        except URL.DoesNotExist:
+            return None
+
+    def get(self, request, key, *args, **kwargs):
+        url = self.get_object(key)
+        if not url:
+            return Response(
+                "Short URL does not exists",
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        url.clicks += 1
+        url.save()
+        return redirect(url.target_url)
 
 
 class UrlAdminApiView(APIView):
@@ -52,7 +58,7 @@ class UrlAdminApiView(APIView):
 
         if not url:
             return Response(
-                {"res": "Short URL does not exists"},
+                "Short URL does not exists",
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -64,7 +70,7 @@ class UrlAdminApiView(APIView):
 
         if not url:
             return Response(
-                {"res": "Short URL does not exists"},
+                "Short URL does not exists",
                 status=status.HTTP_400_BAD_REQUEST
             )
 
